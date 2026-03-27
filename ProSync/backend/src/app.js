@@ -18,23 +18,43 @@ const notificationRoutes = require('./routes/notification.routes');
 
 const app = express();
 
-const allowedOrigins = [
+const configuredOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:3002',
   ...(process.env.FRONTEND_URL
     ? process.env.FRONTEND_URL.split(',').map((origin) => origin.trim())
     : []),
+  ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+  ...(process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? [`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`]
+    : []),
 ];
+
+const allowedOrigins = [...new Set(configuredOrigins.filter(Boolean))];
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) {
+    return true;
+  }
+
+  if (/^http:\/\/localhost:\d+$/.test(origin)) {
+    return true;
+  }
+
+  if (allowedOrigins.includes(origin)) {
+    return true;
+  }
+
+  return /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
+};
 
 app.use(helmet());
 
 app.use(
   cors({
     origin(origin, callback) {
-      const isLocalhostOrigin = /^http:\/\/localhost:\d+$/.test(origin || '');
-
-      if (!origin || isLocalhostOrigin || allowedOrigins.includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         return callback(null, true);
       }
 
