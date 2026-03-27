@@ -1,0 +1,46 @@
+{
+  "name": "prosync-portal",
+  "version": "1.0.0",
+  "description": "ProSync - Client-facing project management portal",
+  "scripts": {
+    "setup": "npm install --prefix backend && npm install --prefix frontend && npm run env:setup",
+    "env:setup": "node scripts/setup-env.js",
+    "db:up": "docker compose up -d mongodb",
+    "db:down": "docker compose stop mongodb",
+    "db:reset": "docker compose down -v",
+    "dev": "node scripts/dev.js",
+    "seed": "node scripts/seed.js",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "start": "npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "node -e \"console.log('Backend does not require build')\"",
+    "build:frontend": "npm --prefix frontend run build",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "npm --prefix backend test",
+    "test:frontend": "npm --prefix frontend test",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "npm --prefix backend run lint",
+    "lint:frontend": "npm --prefix frontend run lint",
+    "clean": "node scripts/clean.js",
+    "reset": "npm run clean && npm run setup"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/prosync-portal"
+  },
+  "keywords": [
+    "project-management",
+    "client-portal",
+    "nextjs",
+    "express",
+    "mongodb"
+  ],
+  "author": "ProSync Team",
+  "license": "MIT"
+}
