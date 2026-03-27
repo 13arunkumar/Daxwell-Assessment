@@ -1,0 +1,11 @@
+{
+  "name": "prosync-vercel-root",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix ProSync/frontend run build",
+    "start": "npm --prefix ProSync/frontend run start"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
