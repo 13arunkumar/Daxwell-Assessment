@@ -1,33 +1,48 @@
 const mongoose = require('mongoose');
 
+let connectionPromise = null;
+let listenersRegistered = false;
+
 const connectDatabase = async () => {
+  if (!process.env.MONGODB_URI) {
+    throw new Error('MONGODB_URI is not configured');
+  }
+
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
+  if (connectionPromise) {
+    return connectionPromise;
+  }
+
+  connectionPromise = mongoose.connect(process.env.MONGODB_URI, {
+    maxPoolSize: 10,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+  });
+
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      // MongoDB connection options
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-    });
+    const conn = await connectionPromise;
 
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    if (!listenersRegistered) {
+      mongoose.connection.on('error', (err) => {
+        console.error('MongoDB connection error:', err);
+      });
 
-    // Handle connection events
-    mongoose.connection.on('error', (err) => {
-      console.error('❌ MongoDB connection error:', err);
-    });
+      mongoose.connection.on('disconnected', () => {
+        console.warn('MongoDB disconnected');
+      });
 
-    mongoose.connection.on('disconnected', () => {
-      console.warn('⚠️  MongoDB disconnected');
-    });
+      listenersRegistered = true;
+    }
 
-    process.on('SIGINT', async () => {
-      await mongoose.connection.close();
-      console.log('MongoDB connection closed through app termination');
-      process.exit(0);
-    });
+    console.log(`MongoDB connected: ${conn.connection.host}`);
+    return mongoose.connection;
   } catch (error) {
-    console.error('❌ Database connection failed:', error.message);
-    process.exit(1);
+    connectionPromise = null;
+    console.error('Database connection failed:', error.message);
+    throw error;
   }
 };
 
