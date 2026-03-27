@@ -18,6 +18,26 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
+  const getErrorMessage = (err: any) => {
+    if (!err.response) {
+      return 'Cannot connect to the server. Check the deployed API and MongoDB configuration.'
+    }
+
+    const { data, status } = err.response
+
+    if (Array.isArray(data?.errors)) {
+      return data.errors
+        .map((error: any) => (typeof error === 'string' ? error : error?.message || 'Validation error'))
+        .join(', ')
+    }
+
+    if (typeof data?.message === 'string' && data.message.trim()) {
+      return data.message
+    }
+
+    return `Login failed with status ${status}.`
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -27,12 +47,7 @@ export default function LoginPage() {
       await login(email, password)
       router.push('/dashboard')
     } catch (err: any) {
-      const errorMessage = !err.response
-        ? 'Cannot connect to the server. Make sure the backend API and MongoDB are running.'
-        : err.response?.data?.errors
-        ? err.response.data.errors.map((e: any) => e.message).join(', ')
-        : err.response?.data?.message || 'Login failed. Please try again.'
-      setError(errorMessage)
+      setError(getErrorMessage(err))
     } finally {
       setIsLoading(false)
     }

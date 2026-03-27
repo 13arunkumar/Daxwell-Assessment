@@ -46,6 +46,26 @@ export default function RegisterPage() {
     return null
   }
 
+  const getErrorMessage = (err: any) => {
+    if (!err.response) {
+      return 'Cannot connect to the server. Check the deployed API and MongoDB configuration.'
+    }
+
+    const { data, status } = err.response
+
+    if (Array.isArray(data?.errors)) {
+      return data.errors
+        .map((error: any) => (typeof error === 'string' ? error : error?.message || 'Validation error'))
+        .join(', ')
+    }
+
+    if (typeof data?.message === 'string' && data.message.trim()) {
+      return data.message
+    }
+
+    return `Registration failed with status ${status}.`
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
     setError('')
@@ -73,12 +93,7 @@ export default function RegisterPage() {
       await register(registerData)
       router.push('/dashboard')
     } catch (err: any) {
-      const errorMessage = !err.response
-        ? 'Cannot connect to the server. Make sure the backend API and MongoDB are running.'
-        : err.response?.data?.errors
-        ? err.response.data.errors.map((e: any) => e.message).join(', ')
-        : err.response?.data?.message || 'Registration failed. Please try again.'
-      setError(errorMessage)
+      setError(getErrorMessage(err))
     } finally {
       setIsLoading(false)
     }

@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "ProSync/api/index.js",
+      "src": "ProSync/backend/api/index.js",
       "use": "@vercel/node"
     },
     {
@@ -13,11 +13,11 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "ProSync/api/index.js"
+      "dest": "ProSync/backend/api/index.js"
     },
     {
       "src": "/health",
-      "dest": "ProSync/api/index.js"
+      "dest": "ProSync/backend/api/index.js"
     },
     {
       "handle": "filesystem"
